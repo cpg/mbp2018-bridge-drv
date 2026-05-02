@@ -69,7 +69,7 @@ static void bce_handle_cq_completion(struct bce_device *dev, struct bce_qe_compl
 
 void bce_handle_cq_completions(struct bce_device *dev, struct bce_queue_cq *cq)
 {
-    size_t ce = 0;
+    static size_t ce = 0;
     struct bce_qe_completion *e;
     struct bce_queue_sq *sq;
     e = bce_cq_element(cq, cq->index);
@@ -319,7 +319,8 @@ struct bce_queue_cq *bce_create_cq(struct bce_device *dev, u32 el_count)
 {
     struct bce_queue_cq *cq;
     struct bce_queue_memcfg cfg;
-    int qid = ida_simple_get(&dev->queue_ida, BCE_QUEUE_USER_MIN, BCE_QUEUE_USER_MAX, GFP_KERNEL);
+    static int qid = 0;
+    qid = ida_simple_get(&dev->queue_ida, BCE_QUEUE_USER_MIN, BCE_QUEUE_USER_MAX, GFP_KERNEL);
     if (qid < 0)
         return NULL;
     cq = bce_alloc_cq(dev, qid, el_count);

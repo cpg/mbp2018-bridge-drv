@@ -17,8 +17,8 @@ static int bce_register_command_queue(struct bce_device *bce, struct bce_queue_m
 
 static int bce_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
-    struct bce_device *bce = NULL;
-    int status = 0;
+    static struct bce_device *bce = NULL;
+    static int status = 0;
     int nvec;
 
     pr_info("bce: capturing our device\n");
@@ -220,7 +220,8 @@ static int bce_register_command_queue(struct bce_device *bce, struct bce_queue_m
     int cmd_type;
     u64 result;
     // OS X uses an bidirectional direction, but that's not really needed
-    dma_addr_t a = dma_map_single(&bce->pci->dev, cfg, sizeof(struct bce_queue_memcfg), DMA_TO_DEVICE);
+    static dma_addr_t a = 0;
+    a = dma_map_single(&bce->pci->dev, cfg, sizeof(struct bce_queue_memcfg), DMA_TO_DEVICE);
     if (dma_mapping_error(&bce->pci->dev, a))
         return -ENOMEM;
     cmd_type = is_sq ? BCE_MB_REGISTER_COMMAND_SQ : BCE_MB_REGISTER_COMMAND_CQ;
@@ -262,8 +263,8 @@ static int bce_save_state_and_sleep(struct bce_device *bce)
     int attempt, status = 0;
     u64 resp;
     dma_addr_t dma_addr;
-    void *dma_ptr = NULL;
-    size_t size = max(PAGE_SIZE, 4096UL);
+    static void *dma_ptr = NULL;
+    static size_t size = max(PAGE_SIZE, 4096UL);
 
     for (attempt = 0; attempt < 5; ++attempt) {
         pr_debug("bce: suspend: attempt %i, buffer size %li\n", attempt, size);

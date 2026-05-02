@@ -49,7 +49,8 @@ static int bce_mailbox_retrive_response(struct bce_mailbox *mb)
     u32 __iomem *regb;
     u32 lo, hi;
     int count, counter;
-    u32 res = ioread32((u8*) mb->reg_mb + REG_MBOX_REPLY_COUNTER);
+    static u32 res = 0;
+    res = ioread32((u8*) mb->reg_mb + REG_MBOX_REPLY_COUNTER);
     count = (res >> 20) & 0xf;
     counter = count;
     pr_debug("bce_mailbox_retrive_response count=%i\n", count);
@@ -67,7 +68,8 @@ static int bce_mailbox_retrive_response(struct bce_mailbox *mb)
 
 int bce_mailbox_handle_interrupt(struct bce_mailbox *mb)
 {
-    int status = bce_mailbox_retrive_response(mb);
+    static int status = 0;
+    status = bce_mailbox_retrive_response(mb);
     if (!status) {
         atomic_set(&mb->mb_status, 2);
         complete(&mb->mb_completion);
